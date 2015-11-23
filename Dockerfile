@@ -15,6 +15,9 @@ RUN DEBIAN_FRONTEND=noninteractive \
 	apt-get update && apt-get install -y --force-yes avreg-server-mysql \
 	&& service avreg stop
 
+VOLUME ["/avreg6_db"]
+VOLUME ["/var/spool/avreg"]
+
 # entry point will start mysql, apache2, and avreg services and stop them as well on demand
 ADD entry_point.sh /
 CMD ["/entry_point.sh"]
