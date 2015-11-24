@@ -1,5 +1,12 @@
 FROM debian:jessie
 
+ENV MEDIADIR=/avreg_media
+ENV DBDIR=/avreg_db
+
+RUN mkdir $MEDIADIR && ln -s $MEDIADIR /var/spool/avreg
+
+VOLUME $DBDIR $MEDIADIR
+
 # add avreg repository to application sources
 RUN echo "deb http://avreg.net/repos/6.1/debian/ jessie main contrib non-free" >> /etc/apt/sources.list
 
@@ -14,9 +21,6 @@ RUN echo "mysql-server-5.5 mysql-server/root_password_again password 12345" | de
 RUN DEBIAN_FRONTEND=noninteractive \
 	apt-get update && apt-get install -y --force-yes avreg-server-mysql \
 	&& service avreg stop
-
-VOLUME ["/avreg6_db"]
-VOLUME ["/var/spool/avreg"]
 
 # entry point will start mysql, apache2, and avreg services and stop them as well on demand
 ADD entry_point.sh /

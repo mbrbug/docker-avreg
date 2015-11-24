@@ -21,13 +21,13 @@ service avreg stop
 service apache2 stop
 service mysql stop
 
-if [ ! -f /avreg6_db/initialized ]; then
-	mkdir /avreg6_db
-	mv /var/lib/mysql/avreg6_db/* /avreg6_db
-	touch /avreg6_db/initialized	
+DBDIR=/avreg_db
+if [ ! -f $DBDIR/initialized ]; then
+	mv /var/lib/mysql/avreg6_db/* $DBDIR
+	touch $DBDIR/initialized	
 fi
 rm -rf /var/lib/mysql/avreg6_db
-ln -s /avreg6_db /var/lib/mysql/avreg6_db
+ln -s $DBDIR /var/lib/mysql/avreg6_db
 chown mysql:mysql /var/lib/mysql/avreg6_db
 
 service mysql start
