@@ -1,0 +1,36 @@
+### User-level apache's config addons
+
+# storage-dir http access
+
+## if have no or one profile
+Alias '/avreg/media' '/var/spool/avreg'
+Alias '/avreg' '/usr/share/avreg-site'
+
+## if you have several profiles 
+# for "office" profile's access http://ip_or_name/office/
+# Alias '/office/media' '/var/spool/avreg/office'
+# Alias '/office'       '/usr/share/avreg-site'
+
+## for 'sklad' profile's  access http://ip_or_name/sklad/
+# Alias '/sklad/media'  '/var/spool/avreg/sklad'
+# Alias '/sklad'        '/usr/share/avreg-site'
+
+<IfModule mod_xsendfile.c>
+    XSendFilePath /var/spool/avreg
+</IfModule>
+
+<LocationMatch '/media/'>
+    <IfVersion >= 2.3>
+        Require all granted
+    </IfVersion>
+    <IfVersion < 2.3>
+        Order Deny,Allow
+        Deny from all
+        Allow from all
+    </IfVersion>
+
+    AddDefaultCharset UTF-8
+    Options -Indexes -FollowSymLinks
+    IndexOptions -ScanHTMLTitles -IconsAreLinks FancyIndexing SuppressDescription NameWidth=60
+</LocationMatch>
+

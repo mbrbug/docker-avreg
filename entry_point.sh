@@ -6,6 +6,8 @@ _cleanup() {
 	service avreg stop
 	service apache2 stop
 	service mysql stop
+	service stop rsyslog
+	service cron stop
 
 	kill -s SIGTERM $!
 
@@ -20,10 +22,14 @@ echo "Starting services..."
 service avreg stop
 service apache2 stop
 service mysql stop
+service stop rsyslog
+service cron stop
 
-service mysql start
+#service mysql start
+service rsyslog start
 service apache2 start
 service avreg start
+service cron start
 
 echo "...services started."
 

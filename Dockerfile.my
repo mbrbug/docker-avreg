@@ -1,0 +1,52 @@
+FROM debian:stretch
+
+# add avreg repository to application sources
+RUN echo "deb http://avreg.net/repos/6.3/debian/ stretch main contrib non-free" >> /etc/apt/sources.list
+
+# remove policy file to allow start services while apt-get install
+RUN rm -rf /usr/sbin/policy-rc.d && mkdir /etc/avreg && mkdir /video
+#ADD /conf/avreg-mon.secret /etc/avreg
+#ADD /conf/avreg-unlink.secret /etc/avreg
+#ADD /conf/avreg.conf /etc/avreg
+#ADD /conf/avreg-site.secret /etc/avreg
+#ADD /conf/avregd.secret /etc/avreg
+
+# prepare answers to install mysql
+RUN echo "mysql-server mysql-server/root_password password 12345" | debconf-set-selections
+RUN echo "mysql-server mysql-server/root_password_again password 12345" | debconf-set-selections
+
+# install avreg and remove any pid ghosts of it's service by stopping the service
+RUN DEBIAN_FRONTEND=noninteractive \
+        apt-get update && apt-get install -y rsyslog mysql-server \
+	&& service mysql restart \
+	&& apt-get install -y --allow-unauthenticated avreg-server-mysql \
+        && service avreg stop \
+	&& sed -i 's/db-user = '.*'/db-user = '"'avreg'"' /' /etc/avreg/avreg-mon.secret \
+	&& sed -i 's/db-passwd = '.*'/db-passwd = '"'avreg'"' /' /etc/avreg/avreg-mon.secret \
+	&& sed -i 's/db-user = '.*'/db-user = '"'avreg'"' /' /etc/avreg/avreg-unlink.secret \
+	&& sed -i 's/db-passwd = '.*'/db-passwd = '"'avreg'"' /' /etc/avreg/avreg-unlink.secret \
+	&& sed -i 's/db-user = '.*'/db-user = '"'avreg'"' /' /etc/avreg/avreg-site.secret \
+	&& sed -i 's/db-passwd = '.*'/db-passwd = '"'avreg'"' /' /etc/avreg/avreg-site.secret \
+	&& sed -i 's/db-user = '.*'/db-user = '"'avreg'"' /' /etc/avreg/avregd.secret \
+	&& sed -i 's/db-passwd = '.*'/db-passwd = '"'avreg'"' /' /etc/avreg/avregd.secret \
+	&& sed -i "s/; db-host = ''/db-host = '"'192.168.1.14'"'/" /etc/avreg/avreg.conf \
+	&& sed -i 's/DocumentRoot \/var\/www\/html/DocumentRoot \/usr\/share\/avreg-site/' /etc/apache2/sites-available/000-default.conf \
+	&& sed -i 's/\/avreg\/media/\/media/' /etc/avreg/site-apache2-user.conf \
+	&& sed -i "s/avreg-site {/avreg-site {\nprefix = ''/" /etc/avreg/avreg.conf \
+	&& sed -i "s/; storage-dir = '\/home\/avreg'/storage-dir = '\/video'/" /etc/avreg/avreg.conf \
+	&& sed -i 's/server-name = ".*"/server-name = "homembr videoserver"/' /etc/avreg/avreg.conf \
+	&& service mysql stop && apt-get purge -y mysql-server
+
+# entry point will start mysql, apache2, and avreg services and stop them as well on demand
+ADD entry_point.sh /
+CMD ["/entry_point.sh"]
+
+#ADD /conf/avreg-mon.secret /etc/avreg
+#ADD /conf/avreg-unlink.secret /etc/avreg
+#ADD /conf/avreg.conf /etc/avreg
+#ADD /conf/avreg-site.secret /etc/avreg
+#ADD /conf/avregd.secret /etc/avreg
+
+#ADD /conf/20-avregd.conf /etc/rsyslog.d/
+
+EXPOSE 80
