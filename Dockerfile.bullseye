@@ -77,4 +77,4 @@ CMD ["/entry_point.sh"]
 
 #ADD /conf/20-avregd.conf /etc/rsyslog.d/
 
-EXPOSE 80
+EXPOSE 87
