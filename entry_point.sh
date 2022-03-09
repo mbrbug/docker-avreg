@@ -26,7 +26,7 @@ service rsyslog stop
 service cron stop
 
 #service mysql 
-service postgresql start
+# service postgresql start
 service cron start
 service rsyslog start
 service apache2 start
